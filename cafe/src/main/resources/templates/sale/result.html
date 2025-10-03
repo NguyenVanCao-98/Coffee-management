@@ -1,0 +1,86 @@
+<!-- Đây là result.html, hiển thị kết quả thanh toán cuối cùng bao gồm tổng tiền, giảm giá và tiền nhận -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <meta charset="UTF-8">
+    <title>Kết quả thanh toán</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+<div layout:fragment="content" class="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow mt-10">
+
+    <h2 class="text-2xl font-bold text-blue-700 mb-6">📄 Kết quả thanh toán</h2> 
+
+    <!-- ✅ Hiển thị khi thanh toán thành công -->
+    <div th:if="${response.success}" class="bg-green-50 border-l-4 border-green-500 text-green-700 p-4 rounded mb-6">
+        <p class="font-semibold text-lg mb-2">✅ Thanh toán thành công!</p> <!-- Thông báo thành công -->
+
+        <ul class="space-y-1 pl-4 list-disc"> <!-- Danh sách thông tin -->
+            <li><b>Tổng tiền:</b>
+                <!-- Hiển thị tổng số tiền, định dạng số -->
+                <span th:text="${#numbers.formatDecimal(response.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' VND'">0 VND</span>
+            </li>
+            <li><b>Khách đưa:</b>
+                <!-- Hiển thị số tiền khách đưa -->
+                <span th:text="${#numbers.formatDecimal(response.customerCash, 0, 'COMMA', 0, 'POINT')} + ' VND'">0 VND</span>
+            </li>
+            <li><b>Tiền thối lại:</b>
+                <!-- Hiển thị số tiền trả lại cho khách -->
+                <span th:text="${#numbers.formatDecimal(response.change, 0, 'COMMA', 0, 'POINT')} + ' VND'">0 VND</span>
+            </li>
+            <li><b>Hóa đơn ID:</b>
+                <!-- Hiển thị mã hóa đơn -->
+                <span th:text="${response.invoiceId}">---</span>
+            </li>
+            <li><b>Trạng thái hóa đơn:</b>
+                <!-- Hiển thị trạng thái: Đã thanh toán / Chưa thanh toán -->
+                <span th:text="${response.invoiceStatus}">---</span>
+            </li>
+            <li><b>Nhân viên thanh toán:</b>
+                <!-- Hiển thị tên nhân viên thực hiện thanh toán -->
+                <span th:text="${response.paidByName}">Không rõ</span>
+                (ID: <span th:text="${response.paidById}">-</span>) <!-- Mã nhân viên -->
+            </li>
+        </ul>
+    </div>
+
+    <!-- ❌ Hiển thị khi thanh toán thất bại -->
+    <div th:if="${!response.success}" class="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded mb-6">
+        <p class="font-semibold text-lg mb-2">❌ Thanh toán thất bại</p> <!-- Tiêu đề lỗi -->
+        <p><b th:text="${response.message}">Lỗi không xác định</b></p> <!-- Thông báo lỗi -->
+    </div>
+
+    <!-- Nút quay lại màn hình danh sách bàn -->
+    <a href="/sale"
+       class="inline-block mt-4 text-blue-600 hover:text-blue-800 hover:underline transition">
+        ← Quay lại danh sách bàn
+    </a>
+
+    <!-- Nút in hóa đơn, chỉ hiện khi thanh toán thành công -->
+    <!-- Dẫn tới trang in hóa đơn của bàn -->
+    <!-- Mở trang in ở tab mới -->
+    <a th:if="${response.success}"
+       th:href="@{'/sale/' + ${tableId} + '/print'}" 
+       target="_blank" 
+       id="print-button"
+       class="inline-block mt-4 ml-6 text-green-600 hover:text-green-800 hover:underline transition">
+        🖨 In hóa đơn
+    </a>
+
+</div>
+
+<!-- Script lắng nghe tín hiệu từ cửa sổ in gửi về -->
+<script>
+    window.addEventListener('message', function(event) {
+        if (event.data === 'printed') {
+            alert("🖨 Đã in hóa đơn thành công!"); // Hiển thị thông báo sau khi in
+        }
+    });
+</script>
+
+</body>
+
+</html>

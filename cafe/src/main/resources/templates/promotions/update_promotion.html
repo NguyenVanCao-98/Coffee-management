@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <meta charset="UTF-8">
+    <title>Chỉnh sửa khuyến mãi</title>
+</head>
+<body>
+<div layout:fragment="content" class="bg-[#fefae0] min-h-screen w-full flex justify-center items-start py-12 px-4">
+    <div class="flex justify-center items-center w-full min-h-[80vh] px-4 py-8">
+        <div class="w-full max-w-2xl bg-white p-8 rounded-xl shadow-lg">
+            <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center flex items-center gap-2 justify-center">
+                🛠️ Chỉnh sửa khuyến mãi
+            </h2>
+
+            <form th:action="@{/promotion/update}" th:object="${promotion}" method="post" class="space-y-5">
+                <input type="hidden" th:field="*{id}" />
+
+                <div>
+				    <label for="promotionName" class="block text-gray-700 font-medium mb-1">Tên khuyến mãi</label>
+				    <input type="text" th:field="*{promotionName}" id="promotionName"
+				           required minlength="5" maxlength="15" 
+				           pattern="^(?!\s*$).{5,}$"
+				           title="Tên khuyến mãi phải có ít nhất 5 ký tự và không được để trống hoặc toàn dấu cách"
+				           class="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring focus:ring-blue-300 outline-none"/>
+				    <p class="text-red-500 text-sm mt-1"
+				       th:if="${#fields.hasErrors('promotionName')}"
+				       th:errors="*{promotionName}"></p>
+				</div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="startDate" class="block text-gray-700 font-medium mb-1">Ngày bắt đầu</label>
+                        <input type="date" th:field="*{startDate}" id="startDate"
+                               th:attr="min=${#dates.format(#dates.createNow(), 'yyyy-MM-dd')}" required
+                               class="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring focus:ring-blue-300 outline-none"/>
+                        <p class="text-red-500 text-sm mt-1" th:if="${#fields.hasErrors('startDate')}" th:errors="*{startDate}"></p>
+                    </div>
+
+                    <div>
+                        <label for="endDate" class="block text-gray-700 font-medium mb-1">Ngày kết thúc</label>
+                        <input type="date" th:field="*{endDate}" id="endDate"
+                               th:attr="min=${#dates.format(#dates.createNow(), 'yyyy-MM-dd')}" required
+                               class="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring focus:ring-blue-300 outline-none"/>
+                        <p class="text-red-500 text-sm mt-1" th:if="${#fields.hasErrors('endDate')}" th:errors="*{endDate}"></p>
+                    </div>
+                </div>
+
+                <!-- Giá mua -->
+					<div>
+					    <label for="discountValue" class="block text-gray-700 font-medium mb-1">% giảm giá</label>
+					    <input type="number" th:field="*{discountValue}" id="discountValue" 
+					           min="1" max="100" step="1" required
+					           class="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring focus:ring-blue-300 outline-none"/>
+					    <p class="text-red-500 text-sm mt-1" 
+					       th:if="${#fields.hasErrors('discountValue')}" 
+					       th:errors="*{discountValue}"></p>
+					</div>
+
+
+                <!-- Nút hành động -->
+                <div class="flex justify-between mt-6">
+                    <a th:href="@{/promotion}"
+                       class="inline-block bg-gray-500 hover:bg-gray-600 text-white font-medium px-4 py-2 rounded-md shadow">
+                        ← Quay lại
+                    </a>
+                    <button type="submit"
+                            class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-5 py-2 rounded-md shadow transition">
+                        💾 Lưu khuyến mãi
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>

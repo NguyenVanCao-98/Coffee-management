@@ -1,0 +1,69 @@
+<!-- print.html là giao diện in hóa đơn, hiển thị trước khi thực hiện thanh toán.-->
+ <!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>In hóa đơn</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @media print {
+            .no-print {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body class="bg-white text-black p-6"> 
+
+<div class="max-w-xl mx-auto border p-6 shadow"> <!-- Khối chứa hóa đơn căn giữa, viền, padding và đổ bóng -->
+    <h1 class="text-2xl font-bold text-center mb-4">🧾 HÓA ĐƠN THANH TOÁN</h1> <!-- Tiêu đề hóa đơn -->
+
+    <div class="mb-4">
+        <p><b>Bàn số:</b> <span th:text="${tableId}">---</span></p> <!-- Hiển thị số bàn -->
+        <p><b>Ngày:</b> <span th:text="${#dates.format(#dates.createNow(), 'dd/MM/yyyy HH:mm')}">---</span></p> <!-- Hiển thị ngày giờ hiện tại -->
+        <p><b>Nhân viên:</b> <span th:text="${employeeName}">---</span></p> <!-- Hiển thị tên nhân viên phục vụ -->
+    </div>
+
+    <table class="w-full text-left border-collapse border mb-4"> <!-- Bảng danh sách món ăn -->
+        <thead>
+        <tr class="bg-gray-200"> <!-- Header của bảng -->
+            <th class="border px-2 py-1">Món</th> <!-- Tên món -->
+            <th class="border px-2 py-1">SL</th> <!-- Số lượng -->
+            <th class="border px-2 py-1">Đơn giá</th> <!-- Giá tiền mỗi món -->
+            <th class="border px-2 py-1">Thành tiền</th> <!-- Tổng tiền = SL * Đơn giá -->
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="item : ${items}"> <!-- Lặp qua danh sách các món đã gọi -->
+            <td class="border px-2 py-1" th:text="${item.itemName}">Cafe</td> <!-- Tên món -->
+            <td class="border px-2 py-1" th:text="${item.quantity}">1</td> <!-- Số lượng -->
+            <td class="border px-2 py-1" th:text="${#numbers.formatDecimal(item.price, 0, 'COMMA', 0, 'POINT')}">0</td> <!-- Giá đơn vị -->
+            <td class="border px-2 py-1" th:text="${#numbers.formatDecimal(item.quantity * item.price, 0, 'COMMA', 0, 'POINT')}">0</td> <!-- Thành tiền -->
+        </tr>
+        </tbody>
+    </table>
+
+    <p class="text-right font-bold">Tổng cộng:
+        <span th:text="${#numbers.formatDecimal(totalAmount, 0, 'COMMA', 0, 'POINT')}">0</span> VND
+        <!-- Hiển thị tổng tiền của tất cả món -->
+    </p>
+</div>
+
+<!-- Khu vực nút hành động: In và đóng -->
+<div class="text-center mt-4 no-print"> <!-- Chỉ hiển thị khi không in -->
+    <button onclick="window.print()" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">🖨 In</button>
+    <!-- Nút in hóa đơn -->
+    <button onclick="window.close()" class="ml-4 px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-600">❌ Đóng</button>
+    <!-- Nút đóng cửa sổ -->
+</div>
+
+<!-- Script gửi tín hiệu về cửa sổ cha sau khi in xong -->
+<script>
+    window.onafterprint = function () {
+        if (window.opener) {
+            window.opener.postMessage('printed', '*'); // Gửi thông báo "printed" cho trang cha
+        }
+    };
+</script>
+</body>
+</html>

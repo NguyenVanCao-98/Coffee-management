@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <meta charset="UTF-8">
+    <title>Quản lý nhân viên</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+<div layout:fragment="content" class="bg-[#fefae0] min-h-screen w-full px-6 py-8">
+    <div class="max-w-[1500px] mx-auto">
+
+        <div class="flex items-center justify-between mb-6">
+            <h2 class="text-3xl font-bold text-gray-800 flex items-center gap-2">
+                📋 Danh sách nhân viên
+            </h2>
+            <a th:href="@{/employee/create}"
+               class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-5 py-2 rounded-md shadow transition">
+                ➕ <span>Thêm nhân viên</span>
+            </a>
+        </div>
+
+        <form method="get" th:action="@{/employee}" class="flex items-center gap-2 mb-4">
+            <input type="text" name="keyword" placeholder="Tìm theo tên hoặc chức vụ"
+                   th:value="${param.keyword}" class="px-3 py-2 border border-gray-300 rounded-md text-sm w-72">
+            <button type="submit"
+                    class="bg-green-600 hover:bg-green-700 text-white text-sm font-semibold px-4 py-2 rounded-md shadow transition">
+                🔍 Tìm
+            </button>
+        </form>
+
+        <div class="mb-4 text-sm text-gray-600 italic" th:if="${param.keyword}">
+            Đang tìm với từ khóa: "<span th:text="${param.keyword}"></span>"
+        </div>
+
+        <div class="w-full overflow-x-auto border border-gray-300 rounded-xl shadow bg-white hidden md:block">
+            <table class="w-full min-w-[800px] text-sm text-gray-800 table-fixed">
+                <thead class="bg-gray-100 text-xs font-semibold text-gray-600 uppercase">
+                <tr>
+                    <th class="w-3/12 px-4 py-3 text-left">Họ tên</th>
+                    <th class="w-3/12 px-4 py-3 text-left">Chức vụ</th>
+                    <th class="w-3/12 px-4 py-3 text-center">Lương</th>
+                    <th class="w-3/12 px-4 py-3 text-center">Thao tác</th>
+                </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                <tr th:each="employee : ${employees.employees}" class="hover:bg-gray-50 transition">
+                    <td class="px-4 py-3 font-semibold truncate text-left" th:text="${employee.fullName}"></td>
+                    <td class="px-4 py-3 text-left truncate" th:text="${employee.positionName}"></td>
+                    <td class="px-4 py-3 text-center" th:text="${#numbers.formatDecimal(employee.salary, 0, 'POINT', 0, 'COMMA')}"></td>
+                    <td class="px-4 py-3 text-center">
+                        <div class="flex justify-center space-x-2">
+                            <a th:href="@{/employee/update/{id}(id=${employee.id})}"
+                               class="inline-flex items-center bg-yellow-400 hover:bg-yellow-500 text-white text-xs font-medium px-3 py-1.5 rounded shadow transition">
+                                ✏️ Sửa
+                            </a>
+                            <form th:action="@{/employee/delete/{id}(id=${employee.id})}" method="post"
+                                  th:id="'deleteForm-' + ${employee.id}">
+                                <button type="button"
+                                        th:attr="data-id=${employee.id}, data-name=${employee.fullName}"
+                                        class="btn-delete inline-flex items-center bg-red-500 hover:bg-red-600 text-white text-xs font-medium px-3 py-1.5 rounded shadow transition">
+                                    🗑️ Xóa
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(employees.employees)}">
+                    <td colspan="5" class="text-center text-gray-500 italic py-6">
+                        Không có nhân viên nào được tìm thấy.
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="grid grid-cols-1 gap-4 md:hidden">
+            <div th:each="employee : ${employees.employees}" class="bg-white p-4 border rounded shadow hover:shadow-md transition">
+                <h3 class="text-lg font-semibold text-gray-800" th:text="${employee.fullName}"></h3>
+                <p class="text-sm text-gray-500">💼 <span th:text="${employee.positionName}"></span></p>
+                <p class="text-sm text-gray-600">💰 Lương: <span class="font-medium" th:text="${#numbers.formatDecimal(employee.salary, 0, 'POINT', 0, 'COMMA')}"></span></p>
+                <div class="flex gap-3 mt-3">
+                    <a th:href="@{/employee/update/{id}(id=${employee.id})}" class="text-blue-600 hover:underline">✏️ Sửa</a>
+                    <a th:href="@{/employee/delete/{id}(id=${employee.id})}" onclick="return confirm('Bạn có chắc chắn muốn xóa không?')" class="text-red-600 hover:underline">🗑️ Xóa</a>
+                </div>
+            </div>
+            <div th:if="${#lists.isEmpty(employees.employees)}"
+                 class="col-span-full text-center text-gray-500 italic py-6 bg-white rounded shadow">
+                Không có nhân viên nào được tìm thấy.
+            </div>
+        </div>
+
+        <div class="flex items-center justify-between mt-8">
+            <div class="text-sm text-gray-600" th:if="${employees.totalPages > 0}">
+                <span th:text="'Trang ' + (${employees.pageNumber + 1}) + ' / ' + ${employees.totalPages}"></span> |
+                <span th:text="'Tổng: ' + ${employees.totalElements} + ' nhân viên'"></span>
+            </div>
+            <nav>
+                <ul class="inline-flex items-center space-x-1">
+                    <li>
+                        <a th:href="@{/employee(page=${employees.pageNumber - 1}, keyword=${param.keyword})}"
+                           th:class="'flex items-center px-3 py-2 rounded-lg border text-sm transition ' + (${employees.pageNumber == 0} ? 'text-gray-300 border-gray-300 bg-gray-100 cursor-not-allowed pointer-events-none' : 'text-blue-600 border-blue-300 hover:bg-blue-50')">
+                            ◀ Trước
+                        </a>
+                    </li>
+                    <li th:if="${employees.totalPages > 0}"
+                        th:each="pageNum : ${#numbers.sequence(0, employees.totalPages - 1)}">
+                        <a th:href="@{/employee(page=${pageNum}, keyword=${param.keyword})}"
+                           th:text="${pageNum + 1}"
+                           th:class="'px-3 py-2 rounded-lg border text-sm font-medium transition ' + (${pageNum} == ${employees.pageNumber} ? 'bg-blue-600 text-white border-blue-600' : 'border-gray-300 text-gray-700 hover:bg-blue-50')">
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/employee(page=${employees.pageNumber + 1}, keyword=${param.keyword})}"
+                           th:class="'flex items-center px-3 py-2 rounded-lg border text-sm transition ' + (${employees.pageNumber + 1 >= employees.totalPages} ? 'text-gray-300 border-gray-300 bg-gray-100 cursor-not-allowed pointer-events-none' : 'text-blue-600 border-blue-300 hover:bg-blue-50')">
+                            Tiếp ▶
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+
+    </div>
+</div>
+</body>
+</html>

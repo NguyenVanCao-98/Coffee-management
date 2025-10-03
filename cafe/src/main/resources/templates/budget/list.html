@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title>Danh sách Thu Chi</title>
+    <meta charset="UTF-8">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-800">
+<div layout:fragment="content" class="w-full px-4 sm:px-6 lg:px-8 mt-8 p-6 bg-white rounded shadow">
+
+    <h2 class="text-2xl font-bold mb-6 text-blue-600">📊 Danh sách Thu Chi</h2>
+
+    <!-- Form lọc ngày -->
+    <form th:action="@{/budget/list}" method="get" class="flex flex-wrap gap-4 mb-6 items-end">
+       <div>
+	    <label class="block font-medium mb-1">Từ ngày:</label>
+	    <input type="date" name="fromDate" th:value="${filter.fromDate}"
+	           th:attr="min=${#temporals.format(#temporals.createNow().minusYears(1), 'yyyy-MM-dd')}, 
+	                    max=${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd')}"
+	           class="border px-3 py-2 rounded w-full" />
+	</div>
+
+
+        <div>
+            <label class="block font-medium mb-1">Đến ngày:</label>
+            <input type="date" name="toDate" th:value="${filter.toDate}"
+                   class="border px-3 py-2 rounded w-full" />
+        </div>
+        <div>
+            <button type="submit"
+                    class="mt-6 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">Xem</button>
+        </div>
+    </form>
+
+    <div class="overflow-x-auto hidden sm:block">
+        <table class="min-w-full table-auto border border-gray-300 rounded">
+            <thead class="bg-gray-200 text-gray-700">
+                <tr>
+                    <th class="py-2 px-4 text-left border">📅 Ngày</th>
+                    <th class="py-2 px-4 text-right border">📥 Thu (VNĐ)</th>
+                    <th class="py-2 px-4 text-right border">📤 Chi (VNĐ)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:if="${#lists.isEmpty(budgetPage.content)}">
+                    <td colspan="3" class="py-4 px-4 text-center text-gray-500">Không có dữ liệu</td>
+                </tr>
+                <tr th:each="item : ${budgetPage.content}" class="border-t hover:bg-gray-50">
+                    <td class="py-2 px-4 border" th:text="${item.date}">2025-06-01</td>
+                    <td class="py-2 px-4 text-right border"
+                        th:text="${item.income % 1 == 0} ? 
+                                 ${#numbers.formatDecimal(item.income, 0, 'COMMA', 0, 'POINT')} : 
+                                 ${#numbers.formatDecimal(item.income, 0, 'COMMA', 2, 'POINT')}">
+                        0
+                    </td>
+                    <td class="py-2 px-4 text-right border"
+                        th:text="${item.expense % 1 == 0} ? 
+                                 ${#numbers.formatDecimal(item.expense, 0, 'COMMA', 0, 'POINT')} : 
+                                 ${#numbers.formatDecimal(item.expense, 0, 'COMMA', 2, 'POINT')}">
+                        0
+                    </td>
+                </tr>
+            </tbody>
+            <tfoot class="font-semibold bg-gray-100">
+                <tr class="border-t">
+                    <td class="py-2 px-4 border">Tổng</td>
+                    <td class="py-2 px-4 text-right border" th:text="${totalIncomeText}">0</td>
+                    <td class="py-2 px-4 text-right border" th:text="${totalExpenseText}">0</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+
+    <div class="grid grid-cols-1 gap-4 sm:hidden">
+        <div th:each="item : ${budgetPage.content}" class="bg-white p-4 border rounded shadow hover:shadow-md transition">
+            <p class="text-sm text-gray-500">📅 
+                <span class="font-medium text-gray-800" th:text="${item.date}">2025-06-01</span>
+            </p>
+            <p class="mt-2 text-sm text-green-700 font-semibold">
+                📥 Thu: 
+                <span th:text="${item.income % 1 == 0} ? 
+                               ${#numbers.formatDecimal(item.income, 0, 'COMMA', 0, 'POINT')} : 
+                               ${#numbers.formatDecimal(item.income, 0, 'COMMA', 2, 'POINT')}">
+                    0
+                </span> VNĐ
+            </p>
+            <p class="mt-1 text-sm text-red-700 font-semibold">
+                📤 Chi: 
+                <span th:text="${item.expense % 1 == 0} ? 
+                               ${#numbers.formatDecimal(item.expense, 0, 'COMMA', 0, 'POINT')} : 
+                               ${#numbers.formatDecimal(item.expense, 0, 'COMMA', 2, 'POINT')}">
+                    0
+                </span> VNĐ
+            </p>
+        </div>
+        <div th:if="${#lists.isEmpty(budgetPage.content)}"
+             class="col-span-full text-center text-gray-500 italic py-6 bg-white rounded shadow">
+            Không có dữ liệu
+        </div>
+    </div>
+
+    <!-- Phân trang -->
+    <div th:if="${budgetPage.totalPages > 1}" class="mt-6">
+        <span class="font-semibold mr-2">Trang:</span>
+        <span class="inline-flex gap-2">
+            <a th:each="i : ${#numbers.sequence(0, budgetPage.totalPages - 1)}"
+               th:href="@{/budget/list(fromDate=${filter.fromDate}, toDate=${filter.toDate}, page=${i})}"
+               th:text="${i + 1}"
+               th:classappend="${i == budgetPage.number} ? 'font-bold text-blue-600 underline' : 'text-gray-700 hover:underline'">
+                1
+            </a>
+        </span>
+    </div>
+
+    <!-- Thêm khoản chi -->
+    <div class="mt-6">
+        <a th:href="@{/budget/add}"
+           class="inline-block bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">
+            ➕ Thêm khoản chi
+        </a>
+    </div>
+</div>
+</body>
+</html>

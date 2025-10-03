@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+
+<head>
+    <title>Chọn món</title>
+    <meta charset="UTF-8">
+    <link href="/css/output.css" rel="stylesheet">
+</head>
+<body>
+<div layout:fragment="content" class="container mx-auto p-4">
+
+    <h2 class="text-2xl font-bold mb-6">Chọn thực đơn</h2>
+
+    <form th:action="@{/invoice/item}" th:object="${form}" method="post" class="bg-white p-6 rounded-lg shadow-md">
+        <table class="min-w-full divide-y divide-gray-200 border border-gray-300">
+            <thead class="bg-gray-50">
+            <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tên món</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Giá</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Số lượng</th>
+            </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+            <tr th:each="item, iterStat : *{items}">
+                <!-- Hidden fields -->
+                <td class="hidden">
+                    <input type="hidden" th:field="*{items[__${iterStat.index}__].invoiceId}" />
+                    <input type="hidden" th:field="*{items[__${iterStat.index}__].menuItemId}" />
+                </td>
+
+                <!-- Tên món -->
+                <td th:text="${menuItems[iterStat.index].itemName}"
+                    class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                </td>
+
+                <!-- Giá -->
+                <td th:text="${#numbers.formatDecimal(menuItems[iterStat.index].currentPrice, 1, 'COMMA', 2, 'POINT')} + ' đ'"
+                    class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                </td>
+
+               <!-- Số lượng input -->
+				<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+				    <input type="number"
+				           min="0" max="99"
+				           th:field="*{items[__${iterStat.index}__].quantity}"
+				           oninput="if(this.value.length > 2) this.value = this.value.slice(0,2)"
+				           class="mt-1 block w-20 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
+				
+				    <!-- Hiển thị lỗi quantity -->
+				    <p th:if="${#fields.hasErrors('items[' + iterStat.index + '].quantity')}"
+				       th:errors="*{items[__${iterStat.index}__].quantity}"
+				       class="text-red-600 text-sm mt-1"></p>
+				</td>
+
+            </tr>
+            </tbody>
+        </table>
+
+        <!-- Hiển thị lỗi tổng thể (ví dụ không chọn món nào, món trùng...) -->
+        <div th:if="${#fields.hasErrors('items')}" class="mt-4 text-red-600 text-sm">
+            <p th:errors="*{items}"></p>
+        </div>
+
+        <!-- Nút submit -->
+        <div class="mt-6 flex space-x-4">
+            <button type="submit"
+                    class="px-6 py-2 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                Lưu
+            </button>
+            <a th:href="@{/sale}"
+               class="px-6 py-2 border border-gray-300 text-base font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                Hủy
+            </a>
+        </div>
+
+        
+    </form>
+</div>
+</body>
+</html>

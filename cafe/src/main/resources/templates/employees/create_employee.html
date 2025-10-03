@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <meta charset="UTF-8">
+    <title>Thêm nhân viên</title>
+</head>
+<body>
+<div layout:fragment="content" class="bg-[#fefae0] min-h-screen w-full px-6 py-10">
+    <div class="bg-white rounded-xl shadow-xl max-w-[1300px] mx-auto p-8">
+        <h2 class="text-3xl font-bold text-gray-800 mb-8 text-center">🧑‍💼 Thêm nhân viên</h2>
+
+        <form method="post" th:action="@{/employee/create}" th:object="${employee}"
+              class="grid grid-cols-1 md:grid-cols-3 gap-8">
+
+            <div class="flex flex-col items-center justify-start gap-4">
+                <img id="avatarPreview" th:src="${employee.imageUrl != null ? employee.imageUrl : 'https://via.placeholder.com/100x120'}"
+                     class="w-[100px] h-[120px] object-cover border rounded">
+                <label class="text-sm text-gray-600">Ảnh đại diện</label>
+                <input type="file" th:field="*{imageUrl}" id="avatarInput" accept="image/*"
+                       class="text-sm file:py-1 file:px-3 file:rounded file:border-0 file:bg-gray-200 hover:file:bg-gray-300">
+            </div>
+
+            <div class="md:col-span-2 space-y-5">
+                <div>
+                    <label class="block font-medium text-gray-700 mb-1">(*) Họ và tên:</label>
+                     <input type="text" th:field="*{fullName}" 
+					       required 
+					       minlength="2" 
+					       maxlength="30"
+					       pattern="^[A-Za-zÀ-ỹ]+( [A-Za-zÀ-ỹ]+)*$"
+					       title="Tên chỉ được chứa chữ và khoảng trắng, ví dụ: Nguyễn Văn Cao"
+					       class="w-full border border-gray-300 px-4 py-2 rounded-md">
+                    <p class="text-red-500 text-sm mt-1" th:if="${#fields.hasErrors('fullName')}" th:errors="*{fullName}"></p>
+                </div>
+
+                <div>
+				    <label class="block font-medium text-gray-700 mb-1">Địa chỉ:</label>
+				    <input type="text" th:field="*{address}" maxlength="50"
+				           class="w-full border border-gray-300 px-4 py-2 rounded-md">
+				    <p class="text-red-500 text-sm mt-1" th:if="${#fields.hasErrors('address')}" th:errors="*{address}"></p>
+				</div>
+
+
+                <div class="grid grid-cols-12 gap-4 items-center">
+                    <label class="col-span-3 font-medium text-gray-700">(*) Chức vụ:</label>
+                    <select th:field="*{positionId}" id="positionSelect" required
+                            class="col-span-4 border border-gray-300 px-2 py-2 rounded-md">
+                        <option value="">-- Chọn chức vụ --</option>
+                        <option th:each="pos : ${positions}" th:value="${pos.id}"
+                                th:data-luong="${pos.salary}"
+                                th:text="${pos.positionName}">
+                        </option>
+                    </select>
+                    <label class="col-span-2 text-right font-medium text-gray-700">* Lương:</label>
+                    <input type="hidden" id="salaryInput" name="luong">
+                    <span id="salaryDisplay" class="col-span-3 text-green-600 font-semibold"></span>
+                </div>
+
+               <div>
+			    <label class="block font-medium text-gray-700 mb-1">(*) Số điện thoại:</label>
+			    <input type="tel"
+			           th:field="*{phoneNumber}"
+			           required
+			           pattern="^0\d{9,10}$"
+			           title="Số điện thoại phải bắt đầu bằng 0 và có từ 10 đến 11 chữ số"
+			           maxlength="11"
+			           oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+			           class="w-full border border-gray-300 px-4 py-2 rounded-md">
+			    <p class="text-red-500 text-sm mt-1" th:if="${#fields.hasErrors('phoneNumber')}" th:errors="*{phoneNumber}"></p>
+			</div>
+
+
+                <div>
+                    <label class="block font-medium text-gray-700 mb-1">Tên đăng nhập:</label>
+                    <input type="text" th:field="*{username}"
+                           class="w-full border border-gray-300 px-4 py-2 rounded-md">
+                    <p class="text-red-500 text-sm mt-1" th:if="${#fields.hasErrors('username')}" th:errors="*{username}"></p>
+                </div>
+
+                <div>
+                    <label class="block font-medium text-gray-700 mb-1">Mật khẩu:</label>
+                    <input type="password" th:field="*{password}"
+                           class="w-full border border-gray-300 px-4 py-2 rounded-md">
+                    <p class="text-red-500 text-sm mt-1" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></p>
+                </div>
+            </div>
+
+            <div class="md:col-span-3 flex justify-center gap-6 mt-6">
+                <button type="submit"
+                        class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md shadow">
+                    💾 Thêm
+                </button>
+                <a th:href="@{/employee}"
+                   class="bg-gray-400 hover:bg-gray-500 text-white px-6 py-2 rounded-md shadow">
+                    ← Quay lại
+                </a>
+            </div>
+
+            <p class="md:col-span-3 text-center text-sm text-red-500 mt-4">
+                (*): Các trường bắt buộc nhập
+            </p>
+        </form>
+    </div>
+    <script th:src="@{/js/employee.js}"></script>
+</div>
+</body>
+</html>

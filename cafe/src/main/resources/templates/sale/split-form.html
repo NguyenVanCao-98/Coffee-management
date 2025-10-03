@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <meta charset="UTF-8">
+    <title>Tách bàn</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+<div layout:fragment="content">
+
+    <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-md mt-10">
+
+        <h2 class="text-2xl font-bold text-blue-700 mb-6">🔀 Tách bàn</h2>
+
+        <form th:action="@{/sale/split}" method="post" th:object="${splitWrapper}" class="space-y-6">
+
+            <input type="hidden" name="fromTableId" th:value="${fromTableId}" />
+
+            <!-- Bàn đích -->
+            <div>
+                <label for="toTableId" class="block font-semibold mb-1">📍 Chọn bàn cần tách đến:</label>
+                <select name="toTableId" required
+                        class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:ring-blue-300">
+                    <option value="" disabled th:selected="${toTableId == null}">-- Chọn bàn --</option>
+                    <option th:each="table : ${allTables}"
+                            th:value="${table.id}"
+                            th:text="${table.tableName + ' (' + table.status + ')'}"
+                            th:selected="${table.id == toTableId}"
+                            th:disabled="${table.status != T(com.viettridao.cafe.common.TableStatus).AVAILABLE
+                                         && table.status != T(com.viettridao.cafe.common.TableStatus).OCCUPIED}">
+                    </option>
+                </select>
+            </div>
+
+            <!-- Tên khách -->
+           <div>
+		    <label class="block font-semibold mb-1">👤 Tên khách:</label>
+		    <input type="text" name="customerName"
+		           th:value="${customerName}"
+		           maxlength="30"
+		           required
+		           pattern="^[A-Za-zÀ-ỹ\s]+$"
+		           title="Tên chỉ được chứa chữ và khoảng trắng"
+		           class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:ring-blue-300" />
+		    <!-- Hiển thị lỗi validate server-side -->
+		    <p th:if="${customerNameError}" class="text-red-500 text-sm mt-1" th:text="${customerNameError}"></p>
+		</div>
+
+
+            <!-- Số điện thoại -->
+            <div>
+			    <label class="block font-semibold mb-1">📞 Số điện thoại:</label>
+			    <input type="text" name="customerPhone"
+			           maxlength="11"
+			           inputmode="numeric"
+			           pattern="0\d{9,10}"
+			           title="Số điện thoại phải bắt đầu bằng 0 và có từ 10 đến 11 chữ số"
+			           oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+			           class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:ring-blue-300"
+			           th:value="${customerPhone}" required />
+			    <p th:if="${customerPhoneError}" class="text-red-500 text-sm mt-1" th:text="${customerPhoneError}"></p>
+			</div>
+
+
+            <!-- Danh sách món -->
+            <div class="overflow-x-auto">
+                <table class="min-w-full bg-white border border-gray-300 mb-6 text-sm">
+                    <thead class="bg-gray-100 text-gray-700">
+                    <tr>
+                        <th class="py-2 px-3 border text-left">Chọn</th>
+                        <th class="py-2 px-3 border text-left">Tên món</th>
+                        <th class="py-2 px-3 border text-left">Số lượng hiện có</th>
+                        <th class="py-2 px-3 border text-left">Số lượng muốn tách</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="item, iterStat : ${menuItems}" class="border-t hover:bg-gray-50">
+                        <td class="text-center border px-3 py-2">
+                            <input type="hidden" th:name="|items[${iterStat.index}].menuItemId|"
+                                   th:value="${item.menuItemId}" />
+                            <input type="checkbox" th:field="*{items[__${iterStat.index}__].selected}"
+                                   class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" />
+                        </td>
+                        <td class="border px-3 py-2" th:text="${item.itemName}"></td>
+                        <td class="border px-3 py-2" th:text="${item.quantity}"></td>
+                        <td class="border px-3 py-2">
+                            <input type="number"
+                                   class="w-full border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring focus:ring-blue-300"
+                                   th:name="|items[${iterStat.index}].quantityToMove|"
+                                   min="0"
+                                   th:attr="max=${item.quantity}"
+                                   th:value="*{items[__${iterStat.index}__].quantityToMove}" />
+                            <p class="text-red-500 text-sm mt-1"
+                               th:if="${#fields.hasErrors('items[' + iterStat.index + '].quantityToMove')}"
+                               th:errors="*{items[__${iterStat.index}__].quantityToMove}"></p>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Nút hành động -->
+            <div class="flex justify-end gap-4">
+                <a th:href="@{/sale}" class="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded transition">❌ Hủy</a>
+                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition">✅ Tách bàn</button>
+            </div>
+
+        </form>
+    </div>
+
+</div>
+</body>
+</html>

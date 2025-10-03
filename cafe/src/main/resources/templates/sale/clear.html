@@ -1,0 +1,75 @@
+<!DOCTYPE html> <!-- Khai báo loại tài liệu HTML5 -->
+<html xmlns:th="http://www.thymeleaf.org" 
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}"> <!-- Sử dụng layout tổng thể từ file layout.html -->
+
+<head>
+    <meta charset="UTF-8"> <!-- Đặt bảng mã ký tự là UTF-8 -->
+    <title>Quản lý bán hàng - Hủy bàn</title> <!-- Tiêu đề hiển thị trên tab trình duyệt -->
+    <script src="https://cdn.tailwindcss.com"></script> <!-- Nhúng Tailwind CSS từ CDN -->
+</head>
+
+<body class="bg-gray-100 p-6"> <!-- Thẻ body với nền xám và padding -->
+<div layout:fragment="content" class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-md">
+    <!-- Đoạn nội dung chính sẽ được chèn vào layout tổng. Căn giữa, nền trắng, bo góc, đổ bóng -->
+
+    <h1 class="text-2xl font-bold mb-6 text-gray-800">🪑 Danh sách bàn</h1>
+    <!-- Tiêu đề lớn: Danh sách bàn -->
+
+    <table class="min-w-full bg-white border border-gray-300 rounded-md overflow-hidden">
+        <!-- Bảng hiển thị danh sách bàn, full width, có viền và bo tròn -->
+
+        <thead>
+            <tr class="bg-gray-100 text-gray-700 text-sm uppercase tracking-wider">
+                <!-- Hàng tiêu đề với nền xám nhạt và chữ in hoa -->
+                <th class="py-3 px-4 text-left">Tên bàn</th> <!-- Cột tên bàn -->
+                <th class="py-3 px-4 text-left">Trạng thái</th> <!-- Cột trạng thái bàn -->
+                <th class="py-3 px-4 text-center">Hành động</th> <!-- Cột hành động (nút hủy) -->
+            </tr>
+        </thead>
+
+        <tbody class="text-gray-800 text-sm">
+            <!-- Phần thân bảng, font nhỏ màu đậm -->
+            
+            <!-- Dữ liệu mẫu: bàn 1 -->
+            <tr class="border-t hover:bg-gray-50 transition">
+                <!-- Hàng có viền trên và hiệu ứng hover -->
+                <td class="py-3 px-4">Bàn 1</td> <!-- Tên bàn -->
+                <td class="py-3 px-4 text-yellow-600 font-medium">Đang sử dụng</td> <!-- Trạng thái -->
+                <td class="py-3 px-4 text-center">
+                    <!-- Nút hủy bàn -->
+                    <form action="/sale/clear" method="post"
+                          onsubmit="return confirm('Bạn có chắc chắn muốn hủy bàn này?');">
+                        <!-- Gửi POST đến /sale/clear và xác nhận trước khi gửi -->
+                        <input type="hidden" name="tableId" value="1" />
+                        <!-- Truyền ID bàn cần hủy dưới dạng ẩn -->
+                        <button type="submit"
+                                class="bg-red-600 hover:bg-red-700 text-white font-semibold py-1.5 px-4 rounded transition duration-200">
+                            Hủy Bàn
+                        </button>
+                    </form>
+                </td>
+            </tr>
+
+            <!-- Dữ liệu mẫu: bàn 2 -->
+            <tr class="border-t hover:bg-gray-50 transition">
+                <td class="py-3 px-4">Bàn 2</td> <!-- Tên bàn -->
+                <td class="py-3 px-4 text-green-600 font-medium">Trống</td> <!-- Trạng thái -->
+                <td class="py-3 px-4 text-center">
+                    <form action="/sale/clear" method="post"
+                          onsubmit="return confirm('Bạn có chắc chắn muốn hủy bàn này?');">
+                        <!-- Tương tự bàn 1 -->
+                        <input type="hidden" name="tableId" value="2" />
+                        <button type="submit"
+                                class="bg-red-600 hover:bg-red-700 text-white font-semibold py-1.5 px-4 rounded transition duration-200">
+                            Hủy Bàn
+                        </button>
+                    </form>
+                </td>
+            </tr>
+
+        </tbody>
+    </table>
+</div>
+</body>
+</html>

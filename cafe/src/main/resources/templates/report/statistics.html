@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}"> <!-- Kế thừa layout chung -->
+<head>
+    <meta charset="UTF-8">
+    <title>Báo cáo thống kê</title>
+    <script src="https://cdn.tailwindcss.com"></script> <!-- Sử dụng TailwindCSS -->
+</head>
+<body class="bg-gray-100 text-gray-800"> <!-- Thiết lập màu nền và chữ -->
+
+<!-- Nội dung chính được đặt trong layout fragment "content" -->
+<div layout:fragment="content" class="max-w-6xl mx-auto p-6 bg-white mt-8 rounded shadow">
+
+    <h1 class="text-2xl font-bold text-blue-700 mb-6">📊 Báo cáo thống kê</h1> <!-- Tiêu đề -->
+
+    <!-- Form lọc báo cáo -->
+    <form method="post" th:action="@{/report/statistics}" th:object="${reportFilterRequest}"
+          class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <!-- Trường chọn từ ngày -->
+        
+      <div>
+	    <label class="block font-medium mb-1">Từ ngày:</label>
+	    <input type="date"
+	           th:field="*{fromDate}"
+	           th:min="${#temporals.format(T(java.time.LocalDate).now().minusYears(1), 'yyyy-MM-dd')}"
+	           th:max="${#temporals.format(T(java.time.LocalDate).now(), 'yyyy-MM-dd')}"
+	           class="w-full border px-3 py-2 rounded"/>
+	    <div th:if="${#fields.hasErrors('fromDate')}" th:errors="*{fromDate}" class="text-red-500 text-sm"></div>
+	</div>
+
+        <!-- Trường chọn đến ngày -->
+        <div>
+            <label class="block font-medium mb-1">Đến ngày:</label>
+            <input type="date" th:field="*{toDate}" class="w-full border px-3 py-2 rounded"/>
+            <div th:if="${#fields.hasErrors('toDate')}" th:errors="*{toDate}" class="text-red-500 text-sm"></div>
+        </div>
+        <!-- Trường chọn loại báo cáo -->
+        <div>
+            <label class="block font-medium mb-1">Loại báo cáo:</label>
+            <select th:field="*{category}" class="w-full border px-3 py-2 rounded">
+                <option value="" disabled th:if="${category == null}">-- Chọn loại --</option>
+                <option th:each="t : ${types}" th:value="${t}" th:text="${t}" th:selected="${t == category}"></option>
+            </select>
+        </div>
+        <!-- Nút xem báo cáo -->
+        <div class="flex items-end">
+            <button type="submit"
+                    class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">Xem
+            </button>
+        </div>
+    </form>
+
+    <!-- Bảng kết quả thống kê -->
+    <div class="overflow-x-auto mb-8">
+        <!-- Nếu loại là thống kê nhân viên -->
+        <th:block th:if="${type == T(com.viettridao.cafe.common.ReportType).EMPLOYEE_INFO}">
+            <h2 class="text-xl font-semibold text-blue-800 mb-3">💼 Thống kê lương từng nhân viên</h2>
+            <table class="min-w-full border border-gray-300 bg-white text-center">
+                <thead class="bg-gray-200">
+                <tr>
+                    <th class="py-2 px-4 border">👤 Nhân viên</th>
+                    <th class="py-2 px-4 border">📅 Ngày</th>
+                    <th class="py-2 px-4 border text-purple-700">Lương/ngày</th>
+                </tr>
+                </thead>
+                <tbody>
+                <!-- Duyệt danh sách lương nhân viên -->
+                <tr th:each="e : ${employeeSalaries}" class="hover:bg-gray-50">
+                    <td class="border py-2 px-4" th:text="${e.fullName}"></td>
+                    <td class="border py-2 px-4" th:text="${#temporals.format(e.date, 'dd/MM/yyyy')}"></td>
+                    <td class="border py-2 px-4 text-purple-700"
+                        th:text="${#numbers.formatDecimal(e.dailySalary, 0, 'COMMA', 0, 'POINT')} + ' đ'"></td>
+                </tr>
+                </tbody>
+            </table>
+        </th:block>
+
+        <!-- Ngược lại: hiển thị báo cáo thu chi -->
+        <th:block th:unless="${type == T(com.viettridao.cafe.common.ReportType).EMPLOYEE_INFO}">
+            <table class="min-w-full border border-gray-300 bg-white text-center">
+                <thead class="bg-gray-200">
+                <tr>
+                    <th class="py-2 px-4 border">📅 Ngày</th>
+                    <th class="py-2 px-4 border text-green-700">Thu</th>
+                    <th class="py-2 px-4 border text-red-700">Chi</th>
+                </tr>
+                </thead>
+                <tbody>
+                <!-- Duyệt danh sách báo cáo -->
+                <tr th:each="report : ${reports}" class="hover:bg-gray-50">
+                    <td class="border py-2 px-4"
+                        th:text="${report.date != null ? #temporals.format(report.date, 'dd/MM/yyyy') : ''}"></td>
+                    <td class="border py-2 px-4 text-green-600"
+                        th:text="${report.revenue != null ? #numbers.formatDecimal(report.revenue, 0, 'COMMA', 0, 'POINT') + ' đ' : '0 đ'}"></td>
+                    <td class="border py-2 px-4 text-red-600"
+                        th:text="${report.expense != null ? #numbers.formatDecimal(report.expense, 0, 'COMMA', 0, 'POINT') + ' đ' : '0 đ'}"></td>
+                </tr>
+                </tbody>
+              <tfoot>
+				<tr class="bg-gray-100 font-semibold">
+				    <td class="py-2 px-4 text-right">Tổng:</td>
+				    <td class="py-2 px-4 text-green-700"
+				        th:text="${totalRevenue != null ? #numbers.formatDecimal(totalRevenue, 0, 'COMMA', 0, 'POINT') + ' đ' : '0 đ'}"></td>
+				    <td class="py-2 px-4 text-red-700"
+				        th:text="${totalExpense != null ? #numbers.formatDecimal(totalExpense, 0, 'COMMA', 0, 'POINT') + ' đ' : '0 đ'}"></td>
+				</tr>
+				</tfoot>
+
+            </table>
+        </th:block>
+    </div>
+
+    <!-- Khu vực xuất báo cáo -->
+    <div class="mb-8">
+        <h2 class="text-xl font-semibold mb-2">📤 Xuất báo cáo</h2>
+        <form method="get" th:action="@{/report/export}" class="flex flex-col md:flex-row items-center gap-4">
+            <!-- Truyền các tham số lọc dạng ẩn -->
+            <input type="hidden" name="from" th:value="${from}"/>
+            <input type="hidden" name="to" th:value="${to}"/>
+            <input type="hidden" name="type" th:value="${type}"/>
+            <!-- Chọn định dạng file -->
+            <div class="flex gap-3 items-center">
+                <label class="font-medium">Định dạng:</label>
+                <label><input type="radio" name="format" value="TXT" checked class="mr-1">.txt</label>
+                <label><input type="radio" name="format" value="XLS" class="ml-3 mr-1">.xls</label>
+                <label><input type="radio" name="format" value="SQL" class="ml-3 mr-1">.sql</label>
+                <label><input type="radio" name="format" value="PDF" class="ml-3 mr-1">.pdf</label> <!-- ✅ -->
+            </div>
+            <!-- Nút xuất file -->
+            <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">
+                💾 Xuất file
+            </button>
+        </form>
+    </div>
+
+    <!-- Khu vực in báo cáo -->
+    <div>
+        <h2 class="text-xl font-semibold mb-2">🖨️ In báo cáo</h2>
+        <form method="post" th:action="@{/report/print}" class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+            <!-- Chọn khổ giấy -->
+            <div>
+                <label class="block font-medium mb-1">Khổ giấy:</label>
+                <select name="paperSize" required class="w-full border px-3 py-2 rounded">
+                    <option value="A4">A4</option>
+                    <option value="A5">A5</option>
+                    <option value="Letter">Letter</option>
+                </select>
+            </div>
+            <!-- Chọn máy in -->
+            <div>
+                <label class="block font-medium mb-1">Máy in:</label>
+                <select name="printerName" required class="w-full border px-3 py-2 rounded">
+                    <option value="Printer1">Printer1</option>
+                    <option value="Printer2">Printer2</option>
+                </select>
+            </div>
+            <!-- Nhập số lượng bản in -->
+            <div>
+                <label class="block font-medium mb-1">Số lượng:</label>
+                <input type="number" name="copies" min="1" value="1" required
+                       class="w-full border px-3 py-2 rounded"/>
+            </div>
+            <!-- Nút in -->
+            <div>
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded">
+                    🖨️ In
+                </button>
+            </div>
+        </form>
+    </div>
+
+</div>
+</body>
+</html>

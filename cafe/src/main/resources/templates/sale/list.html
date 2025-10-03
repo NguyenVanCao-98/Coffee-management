@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{layout}" th:inline="javascript">
+<head>
+<meta charset="UTF-8">
+<title>Danh sách bàn</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link
+	href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+	rel="stylesheet">
+<style>
+body {
+	font-family: 'Inter', sans-serif;
+}
+
+a.active {
+	font-weight: bold;
+	color: red;
+}
+
+.btn {
+	padding: 0.5rem 1rem;
+	border-radius: 0.375rem;
+	background-color: #4a90e2;
+	color: white;
+	font-weight: bold;
+	cursor: pointer;
+	text-decoration: none;
+	transition: background-color 0.2s, transform 0.2s;
+	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.btn:hover:not(.disabled) {
+	background-color: #357ab7;
+	transform: translateY(-2px);
+}
+
+.disabled {
+	pointer-events: none;
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+.table-card {
+	background-color: #f0f0f0;
+	border-radius: 0.75rem;
+	padding: 1.5rem;
+	border: 2px solid transparent;
+	box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+	transition: transform 0.2s, box-shadow 0.2s;
+	cursor: pointer;
+}
+
+.table-card:hover {
+	transform: translateY(-5px);
+	box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+}
+
+.table-card.selected {
+	border-color: #4a90e2;
+	box-shadow: 0 0 0 3px #4a90e2, 0 8px 15px rgba(0, 0, 0, 0.15);
+}
+
+.status-OCCUPIED {
+	background-color: #ffe0e0 !important;
+	border-color: #dc2626;
+	color: #7f1d1d;
+}
+
+.status-AVAILABLE {
+	background-color: #e0ffe0 !important;
+	border-color: #16a34a;
+	color: #14532d;
+}
+
+.status-RESERVED {
+	background-color: #fff8e0 !important;
+	border-color: #d97706;
+	color: #78350f;
+}
+</style>
+</head>
+<body>
+	<div layout:fragment="content"
+		class="bg-[#fefae0] min-h-screen w-full px-6 py-8">
+		<h2 class="text-3xl font-extrabold text-gray-800 mb-6 text-center">Danh
+			sách bàn</h2>
+
+		<div
+			class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 mb-8">
+			<div th:each="table : ${tables}" th:data-table-id="${table.id}"
+				th:data-table-status="${table.status}"
+				th:classappend="' status-' + ${table.status}"
+				class="table-card flex flex-col items-center justify-center text-center"
+				onclick="selectTable(this)">
+				<p class="text-xl font-semibold mb-2" th:text="${table.tableName}">Tên
+					bàn</p>
+				<p class="text-md font-medium" th:text="${table.status}">Trạng
+					thái</p>
+			</div>
+		</div>
+
+		<!-- Nút thao tác -->
+		<div class="mt-6 flex flex-wrap gap-4 justify-center">
+			<a id="btn-view" href="#" class="btn disabled">👁 Xem bàn</a> <a
+				id="btn-transfer" href="#" class="btn disabled">🔁 Chuyển bàn</a> <a
+				id="btn-split" href="#" class="btn disabled">✂️ Tách bàn</a> <a
+				id="btn-merge" href="/sale/merge-tables" class="btn">➕ Gộp bàn</a>
+			<form id="form-clear" method="post" th:action="@{/sale/clear}">
+				<input type="hidden" name="tableId" id="clear-table-id"> <input
+					type="hidden" th:name="${_csrf.parameterName}"
+					th:value="${_csrf.token}" />
+				<button type="submit" id="btn-clear" class="btn disabled"
+					onclick="return confirm('Bạn có chắc chắn muốn hủy bàn này?');">
+					❌ Hủy bàn</button>
+
+			</form>
+			<a id="btn-booking" href="#" class="btn disabled">📅 Đặt bàn</a>
+		</div>
+
+		<div class="mt-3 flex flex-wrap gap-4 justify-center">
+			<a id="btn-menu" href="#" class="btn disabled">🍽 Chọn thực đơn</a> <a
+				id="btn-payment" href="#" class="btn disabled"
+				onclick="submitPayment(event)">💰 Thanh toán</a> <a
+				class="btn disabled" title="Chức năng đang bị khóa">🖨 In Ấn</a>
+		</div>
+
+		<form id="form-payment" th:action="@{/payment/__dummy__}"
+			method="post" style="display: none;">
+			<input type="hidden" name="tableId" id="payment-table-id"> <input
+				type="hidden" th:name="${_csrf.parameterName}"
+				th:value="${_csrf.token}" />
+		</form>
+
+		<!-- Script JS -->
+		<script th:inline="javascript">
+        let currentSelectedTableCard = null;
+
+        function selectTable(clickedCard) {
+            const tableId = clickedCard.dataset.tableId;
+            const tableStatus = clickedCard.dataset.tableStatus;
+
+            if (currentSelectedTableCard) currentSelectedTableCard.classList.remove("selected");
+            clickedCard.classList.add("selected");
+            currentSelectedTableCard = clickedCard;
+
+            document.getElementById("btn-view").href = `/sale/${tableId}/menu`;
+            document.getElementById("btn-booking").href = `/booking?tableId=${tableId}`;
+            document.getElementById("btn-menu").href = `/sale/invoice/create-or-get?tableId=${tableId}`;
+            document.getElementById("btn-transfer").href = `/sale/transfer-table?from=${tableId}`;
+            document.getElementById("btn-merge").href = `/sale/merge-tables?tableIds=${tableId}`;
+            document.getElementById("btn-split").href = `/sale/split?fromTableId=${tableId}`;
+            document.getElementById("payment-table-id").value = tableId;
+            document.getElementById("clear-table-id").value = tableId;
+
+            const btnIds = [
+                "btn-view", "btn-transfer", "btn-split", "btn-merge",
+                "btn-clear", "btn-booking", "btn-menu", "btn-payment"
+            ];
+            btnIds.forEach(id => document.getElementById(id).classList.remove("disabled"));
+
+            // Disable thanh toán nếu không OCCUPIED
+            if (tableStatus !== "OCCUPIED") {
+                document.getElementById("btn-payment").classList.add("disabled");
+            }
+            
+            if (tableStatus !== "RESERVED") {
+                document.getElementById("btn-clear").classList.add("disabled");
+            }
+            
+            if (tableStatus === "OCCUPIED" || tableStatus === "RESERVED") {
+                document.getElementById("btn-booking").classList.add("disabled");
+            }
+            
+            if (tableStatus === "AVAILABLE") {
+                document.getElementById("btn-view").classList.add("disabled");
+            }
+            
+            if (tableStatus === "AVAILABLE") {
+                document.getElementById("btn-transfer").classList.add("disabled");
+            }
+            
+            if (tableStatus === "AVAILABLE" || tableStatus === "RESERVED") {
+                document.getElementById("btn-split").classList.add("disabled");
+            }
+            
+        }
+
+        function submitPayment(event) {
+            event.preventDefault();
+            if (!currentSelectedTableCard) return;
+
+            const tableStatus = currentSelectedTableCard.dataset.tableStatus;
+            if (tableStatus !== "OCCUPIED") {
+                alert("Chỉ bàn đang OCCUPIED mới được thanh toán!");
+                return;
+            }
+
+            const tableId = currentSelectedTableCard.dataset.tableId;
+            window.location.href = `/payment/${tableId}`; 
+        }
+    </script>
+	</div>
+</body>
+</html>

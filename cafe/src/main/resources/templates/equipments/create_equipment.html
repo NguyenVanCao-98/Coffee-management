@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <meta charset="UTF-8">
+    <title>Thêm thiết bị</title>
+</head>
+<body>
+<div layout:fragment="content" class="bg-[#fefae0] min-h-screen w-full flex justify-center items-start py-12 px-4">
+    <div class="flex justify-center items-center w-full min-h-[80vh] px-4 py-8">
+        <div class="w-full max-w-2xl bg-white p-8 rounded-xl shadow-lg">
+            <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center flex items-center gap-2 justify-center">
+                🛠️ Thêm thiết bị mới
+            </h2>
+
+            <form th:action="@{/equipment/create}" th:object="${equipment}" method="post" class="space-y-5">
+                <!-- Tên thiết bị -->
+               <div>
+			    <label for="equipmentName" class="block text-gray-700 font-medium mb-1">Tên thiết bị</label>
+			    <input type="text" 
+			           th:field="*{equipmentName}" 
+			           id="equipmentName" 
+			           required 
+			           minlength="5" 
+			           maxlength="15"
+			           pattern="^(?!\s*$).{5,50}$"
+			           title="Tên thiết bị phải có từ 5 đến 50 ký tự, không được để trống hoặc toàn dấu cách"
+			           class="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring focus:ring-blue-300 outline-none"/>
+			    <p class="text-red-500 text-sm mt-1" 
+			       th:if="${#fields.hasErrors('equipmentName')}" 
+			       th:errors="*{equipmentName}"></p>
+			</div>
+
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Số lượng -->
+                   <div>
+				    <label for="quantity" class="block text-gray-700 font-medium mb-1">Số lượng</label>
+				    <input type="number" 
+				           th:field="*{quantity}" 
+				           id="quantity" 
+				           min="1" 
+				           max="1000" 
+				           required
+				           oninput="if(this.value.length > 4) this.value = this.value.slice(0,4);"
+				           class="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring focus:ring-blue-300 outline-none"/>
+				    <p class="text-red-500 text-sm mt-1" 
+				       th:if="${#fields.hasErrors('quantity')}" 
+				       th:errors="*{quantity}"></p>
+				</div>
+
+
+                    <!-- Ngày mua -->
+                    <div>
+                        <label for="purchaseDate" class="block text-gray-700 font-medium mb-1">Ngày mua</label>
+                        <input type="date" th:field="*{purchaseDate}" id="purchaseDate"
+                               th:attr="max=${#dates.format(#dates.createNow(), 'yyyy-MM-dd')}" readonly
+                               class="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring focus:ring-blue-300 outline-none"/>
+                        <p class="text-red-500 text-sm mt-1" th:if="${#fields.hasErrors('purchaseDate')}" th:errors="*{purchaseDate}"></p>
+                    </div>
+                </div>
+
+                <!-- Giá mua -->
+               <div>
+			    <label for="purchasePrice" class="block text-gray-700 font-medium mb-1">Giá mua</label>
+			    <input type="number"
+			           th:field="*{purchasePrice}"
+			           id="purchasePrice"
+			           min="1"
+			           max="999999999"
+			           step="1"
+			           required
+			           class="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring focus:ring-blue-300 outline-none"/>
+			    <p class="text-red-500 text-sm mt-1" th:if="${#fields.hasErrors('purchasePrice')}" th:errors="*{purchasePrice}"></p>
+			</div>
+
+                <!-- Nút hành động -->
+                <div class="flex justify-between mt-6">
+                    <a th:href="@{/equipment}"
+                       class="inline-block bg-gray-500 hover:bg-gray-600 text-white font-medium px-4 py-2 rounded-md shadow">
+                        ← Quay lại
+                    </a>
+                    <button type="submit"
+                            class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-5 py-2 rounded-md shadow transition">
+                        💾 Lưu thiết bị
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,88 @@
+<!DOCTYPE html> <!-- Khai báo đây là tài liệu HTML5 -->
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}"> <!-- Kế thừa layout tổng thể -->
+
+<head>
+    <meta charset="UTF-8"> <!-- Đặt bảng mã ký tự UTF-8 -->
+    <title>Đặt Bàn</title> <!-- Tiêu đề hiển thị trên tab trình duyệt -->
+    <script src="https://cdn.tailwindcss.com"></script> <!-- Nhúng Tailwind CSS từ CDN -->
+</head>
+
+<body class="bg-gray-100 text-gray-800"> <!-- Nền xám nhạt và chữ màu xám đậm -->
+<div layout:fragment="content" class="max-w-3xl w-full mx-auto bg-white p-6 mt-10 rounded shadow-md">
+    <!-- Nội dung chính được chèn vào layout cha. Giao diện thẻ trắng, bo góc, đổ bóng -->
+
+    <h2 class="text-2xl font-bold text-blue-700 mb-6">📅 Đặt Bàn</h2> <!-- Tiêu đề trang -->
+
+    <form th:action="@{/booking}" th:object="${booking}" method="post" class="space-y-5">
+        <!-- Gửi form POST tới /booking. Gắn đối tượng `booking` để liên kết các field -->
+
+        <input type="hidden" th:field="*{tableId}" /> <!-- ID bàn, ẩn -->
+        <input type="hidden" th:field="*{employeeId}" /> <!-- ID nhân viên đặt bàn, ẩn -->
+
+        <!-- Nhập tên khách hàng -->
+        <div>
+            <label class="block font-semibold mb-1">👤 Tên khách hàng:</label>
+           <input type="text" th:field="*{customerName}" required minlength="2" maxlength="30"
+			       placeholder="Nguyễn Văn A"
+			       pattern="^[A-Za-zÀ-ỹ\s]+$"
+			       title="Chỉ nhập chữ và khoảng trắng, không nhập số hay ký tự đặc biệt"
+			       class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:ring-blue-300" />
+            <!-- Hiển thị lỗi nếu có -->
+            <div th:if="${#fields.hasErrors('customerName')}" th:errors="*{customerName}"
+                 class="text-red-600 text-sm mt-1"></div>
+        </div>
+
+        <!-- Nhập số điện thoại khách -->
+        <div>
+		    <label class="block font-semibold mb-1">📞 Số điện thoại:</label>
+		  <input type="text" th:field="*{customerPhone}" required maxlength="11"
+		       placeholder="0912345678"
+		       pattern="0\d{9,10}"
+		       title="Chỉ nhập số, bắt đầu bằng 0 và có 10 hoặc 11 chữ số"
+		       class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:ring-blue-300"
+		       oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
+		    <div th:if="${#fields.hasErrors('customerPhone')}" th:errors="*{customerPhone}"
+		         class="text-red-600 text-sm mt-1"></div>
+		</div>
+
+        <!-- Chọn ngày đặt bàn -->
+	     <div>
+		   <input type="date" th:field="*{reservationDate}" required
+			       th:attr="min=${today}"
+			       th:value="${today}"
+			       title="Chọn ngày từ hôm nay trở đi"
+			       class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:ring-blue-300" />
+		    <div th:if="${#fields.hasErrors('reservationDate')}" th:errors="*{reservationDate}"
+		         class="text-red-600 text-sm mt-1"></div>
+		</div>
+
+        <!-- Chọn giờ đặt bàn -->
+        <div>
+            <label class="block font-semibold mb-1">⏰ Giờ đặt:</label>
+            <input type="time" th:field="*{reservationTime}" required
+                   class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:ring-blue-300" />
+            <div th:if="${#fields.hasErrors('reservationTime')}" th:errors="*{reservationTime}"
+                 class="text-red-600 text-sm mt-1"></div>
+        </div>
+
+        <!-- Nút Hủy và Đặt -->
+        <div class="flex justify-end gap-4 pt-4">
+            <a href="/sale"
+               class="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500 transition">❌ Hủy</a>
+            <input type="submit" value="✅ Đặt bàn"
+                   class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition" />
+        </div>
+    </form>
+</div>
+
+<!-- Script để đặt min cho ngày hiện tại, không cho đặt lùi -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const today = new Date().toISOString().split("T")[0];
+        document.querySelector("input[type='date']").setAttribute("min", today);
+    });
+</script>
+</body>
+</html>

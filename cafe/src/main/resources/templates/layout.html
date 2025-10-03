@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title layout:title-pattern="$CONTENT_TITLE - Cafe Management">Cafe Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script th:src="@{/js/alert-utils.js}"></script>
+</head>
+<body class="bg-[#fdf6e3] text-gray-800 font-sans flex flex-col min-h-screen" x-data="{ sidebarOpen: false }">
+
+<!-- Header -->
+<header class="bg-gradient-to-r from-[#4e342e] to-[#3e2723] text-white shadow-lg">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+        <!-- Logo -->
+        <div class="flex items-center gap-2">
+            <button @click="sidebarOpen = !sidebarOpen" class="sm:hidden text-white text-2xl">
+                ☰
+            </button>
+            <span class="text-2xl font-bold">☕ Cafe Management</span>
+        </div>
+
+        <!-- User Info -->
+        <div class="flex items-center gap-4">
+            <div class="hidden sm:block text-sm text-right" th:if="${user != null}">
+                <div class="font-semibold" th:text="${user.username}">Tên đăng nhập</div>
+                <div class="text-gray-300 text-xs" th:text="'Chức vụ: ' + ${user.permission}">Chức vụ</div>
+            </div>
+            <img th:if="${user != null}" th:src="${user.imageUrl}" alt="avatar" class="w-8 h-8 rounded-full border"/>
+
+            <form th:if="${user != null}" th:action="@{/logout}" method="post">
+                <button type="submit" class="px-3 py-1 text-sm text-white bg-red-500 rounded shadow hover:bg-red-600">
+                    Đăng xuất
+                </button>
+            </form>
+        </div>
+    </div>
+</header>
+
+<!-- Body -->
+<div class="flex flex-1">
+    <!-- Sidebar -->
+    <aside class="fixed sm:static top-0 left-0 h-full w-64 bg-white border-r p-4 transform sm:translate-x-0 transition-transform duration-300 z-40"
+           :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'">
+        <div class="flex flex-col space-y-2 h-full">
+            <a th:href="@{/home}" th:classappend="${currentPath == '/home'} ? 'bg-gray-200 font-bold'" class="block py-2 rounded hover:bg-gray-100">🏠 Trang chủ</a>
+            <a th:href="@{/account}" th:classappend="${currentPath == '/account'} ? 'bg-gray-200 font-bold'" class="block py-2 rounded hover:bg-gray-100">👤 Trang cá nhân</a>
+            <a th:href="@{/sale}" th:classappend="${currentPath == '/sale'} ? 'bg-gray-200 font-bold'" class="block py-2 rounded hover:bg-gray-100">💵 Quản lý bán hàng</a>
+
+            <!-- Chức năng cho ADMIN -->
+            <div th:if="${user != null and user.permission == 'ADMIN'}">
+                <a th:href="@{/employee}" class="block py-2 rounded hover:bg-gray-100">📈 Quản lý nhân viên</a>
+                <a th:href="@{/equipment}" class="block py-2 rounded hover:bg-gray-100">⚙️ Quản lý thiết bị</a>
+
+                <!-- Dropdown menu chung (kho, menu, ngân sách, dữ liệu) -->
+                <template x-for="menu in [
+                    {title:'📦 Quản lý kho hàng', links:[
+                        {text:'Danh sách hàng hóa', href:'/warehouse'},
+                        {text:'Nhập hàng hóa', href:'/warehouse/import'},
+                        {text:'Xuất hàng hóa', href:'/warehouse/export'}]},
+                    {title:'🍽️ Quản lý thực đơn', links:[
+                        {text:'Danh sách món', href:'/menu'},
+                        {text:'Thêm món', href:'/menu/add'}]},
+                    {title:'📊 Quản lý ngân sách', links:[
+                        {text:'Xem thu chi', href:'/budget/list'},
+                        {text:'Thêm chi tiêu', href:'/budget/add'}]},
+                    {title:'💾 Quản lý dữ liệu', links:[
+                        {text:'Sao lưu dữ liệu', href:'/data/backup'},
+                        {text:'Khôi phục dữ liệu', href:'/data/restore'}]}]"
+                >
+                    <div x-data="{open:false}" class="space-y-1 mb-1">
+                        <button @click="open=!open"
+                                class="w-full text-left block py-2 rounded hover:bg-gray-100 flex justify-between items-center"
+                                :class="{'bg-gray-200 font-bold':open}">
+                            <span x-text="menu.title"></span>
+                            <span x-text="open ? '▲':'▼'" class="text-sm"></span>
+                        </button>
+                        <div x-show="open" x-transition class="pl-4 space-y-1">
+                            <template x-for="link in menu.links" :key="link.text">
+                                <a :href="link.href" class="block py-1 hover:underline" x-text="link.text"></a>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+
+                <a th:href="@{/promotion}" class="block py-2 rounded hover:bg-gray-100">📢 Quản lý Marketing</a>
+                <a th:href="@{/report/statistics}" class="block py-2 rounded hover:bg-gray-100">📈 Thống kê</a>
+                <hr class="my-3">
+                <a th:href="@{/about}" class="block py-2 rounded hover:bg-gray-100">ℹ️ Giới thiệu</a>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Overlay khi sidebar mở trên mobile -->
+    <div x-show="sidebarOpen" class="fixed inset-0 bg-black opacity-40 z-30 sm:hidden" @click="sidebarOpen=false"></div>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-6 bg-[#e0f7fa]" layout:fragment="content">
+        <div class="text-center mt-10 sm:mt-20">
+            <h2 class="text-3xl sm:text-5xl font-bold text-[#4e342e] drop-shadow"
+                th:if="${user != null}"
+                th:text="'Xin chào, ' + ${user.username}"></h2>
+            <h2 class="text-3xl sm:text-5xl font-bold text-[#4e342e] drop-shadow"
+                th:if="${user == null}">Xin chào khách!</h2>
+
+            <p class="mt-4 text-base sm:text-lg text-gray-600">
+                Chúc bạn một ngày quản lý hiệu quả và tràn đầy năng lượng ☕✨
+            </p>
+        </div>
+    </main>
+</div>
+
+<!-- Footer -->
+<footer class="bg-[#3e2723] text-white text-center py-4 shadow-inner">
+    <p>2025 Cafe Management | Junior Việt Trí Đạo</p>
+</footer>
+
+<!-- Global Alert -->
+<div th:replace="~{/alert :: alerts}"></div>
+<script th:src="@{/js/global.js}"></script>
+
+</body>
+</html>

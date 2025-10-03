@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <meta charset="UTF-8">
+    <title>Gộp bàn</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-800">
+<div layout:fragment="content" class="w-full px-6 md:px-12 lg:px-24 bg-white p-6 rounded-lg shadow-md mt-10">
+
+    <h1 class="text-2xl font-bold mb-6 text-blue-700">🔗 Gộp bàn</h1>
+
+    <form th:action="@{/sale/merge-tables}" method="post" class="space-y-6">
+
+       <!-- Bàn đích -->
+		<div>
+		    <label class="block font-semibold mb-2">Chọn bàn gộp đến (mục tiêu):</label>
+		    <select name="targetTableId"
+		            class="w-full border border-gray-300 px-3 py-2 rounded focus:outline-none focus:ring focus:ring-blue-300"
+		            required>
+		        <option value="" disabled selected>-- Chọn bàn --</option>
+		        <option th:each="table : ${targetTables}"
+		                th:value="${table.id}"
+		                th:text="${table.tableName + ' (' + table.status + ')'}"
+		                th:selected="${table.id == targetTableId}">
+		        </option>
+		    </select>
+		</div>
+		
+		<!-- Bàn nguồn -->
+		<div>
+		    <label class="block font-semibold mb-2">Chọn các bàn cần gộp (nguồn):</label>
+		    <div class="grid grid-cols-2 gap-3">
+		        <div th:each="table : ${sourceTables}" class="flex items-center space-x-2">
+		            <input type="checkbox"
+		                   name="sourceTableIds"
+		                   th:id="'source_' + ${table.id}"
+		                   th:value="${table.id}"
+		                   th:checked="${sourceTableIds != null} ? ${sourceTableIds.contains(table.id)} : false"
+		                   class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+		            <label th:for="'source_' + ${table.id}"
+		                   th:text="${table.tableName + ' (' + table.status + ')'}"
+		                   class="text-sm text-gray-700"></label>
+		        </div>
+		    </div>
+		</div>
+
+        <!-- Tên khách -->
+		<div>
+		    <label class="block font-semibold mb-1">👤 Tên khách:</label>
+		    <input type="text" name="customerName"
+		           th:value="${customerName}"
+		           maxlength="30"
+		           required
+		           pattern="^[A-Za-zÀ-ỹ\s]+$"
+		           title="Tên chỉ được chứa chữ và khoảng trắng"
+		           class="w-full border border-gray-300 px-3 py-2 rounded focus:outline-none focus:ring focus:ring-blue-300"
+		           placeholder="Nhập tên khách">
+		</div>
+
+
+        <!-- Số điện thoại -->
+		<div>
+		    <label class="block font-semibold mb-1">📞 Số điện thoại:</label>
+		    <input type="tel" name="customerPhone"
+		           th:value="${customerPhone}"
+		           maxlength="11"
+		           pattern="^0\d{9,10}$"
+		           title="Số điện thoại phải bắt đầu bằng 0 và có từ 10 đến 11 chữ số"
+		           required
+		           oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+		           class="w-full border border-gray-300 px-3 py-2 rounded focus:outline-none focus:ring focus:ring-blue-300"
+		           placeholder="Nhập số điện thoại">
+		</div>
+
+
+        <!-- Nút hành động -->
+        <div class="flex justify-end gap-4">
+            <a th:href="@{/sale}"
+               class="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 transition">
+                ❌ Hủy
+            </a>
+            <button type="submit"
+                    class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
+                ✅ Gộp
+            </button>
+        </div>
+
+    </form>
+</div>
+</body>
+</html>

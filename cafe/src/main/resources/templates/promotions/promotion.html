@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <meta charset="UTF-8">
+    <title>Quản lý khuyến mãi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .btn-main {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            font-weight: 600;
+            padding: 0.6rem 1.2rem;
+            border-radius: 0.5rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            transition: all 0.3s;
+        }
+        .btn-main:hover { background: #1e40af; transform: translateY(-2px); }
+        .btn-edit { background: #facc15; color: white; }
+        .btn-edit:hover { background: #eab308; }
+        .btn-delete { background: #ef4444; color: white; }
+        .btn-delete:hover { background: #dc2626; }
+    </style>
+</head>
+<body>
+<div layout:fragment="content" class="bg-[#fefae0] min-h-screen w-full px-4 sm:px-6 py-6">
+    <div class="max-w-[1500px] mx-auto">
+        <!-- Header -->
+        <div class="flex flex-col sm:flex-row items-center justify-between mb-6 gap-3">
+            <h2 class="text-2xl sm:text-3xl font-bold text-gray-800 flex items-center gap-2">
+                📋 Danh sách khuyến mãi
+            </h2>
+            <a th:href="@{/promotion/create}" class="btn-main shadow">
+                ➕ <span>Thêm khuyến mãi</span>
+            </a>
+        </div>
+
+        <!-- Bảng desktop -->
+        <div class="hidden sm:block w-full overflow-x-auto border border-gray-300 rounded-xl shadow bg-white">
+            <table class="w-full min-w-[700px] text-sm text-gray-800 table-auto">
+                <thead class="bg-gray-100 text-xs font-semibold text-gray-600 uppercase">
+                <tr>
+                    <th class="w-2/6 px-4 py-3 text-left whitespace-normal break-words">Tên khuyến mãi</th>
+                    <th class="w-1/6 px-4 py-3 text-left">Ngày bắt đầu</th>
+                    <th class="w-1/6 px-4 py-3 text-center">Ngày kết thúc</th>
+                    <th class="w-1/6 px-4 py-3 text-right">% giảm giá</th>
+                    <th class="w-1/6 px-4 py-3 text-center">Thao tác</th>
+                </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                <tr th:each="promotion : ${promotions.promotions}" class="hover:bg-blue-50 transition">
+                    <td class="px-4 py-3 font-semibold break-words" th:text="${promotion.promotionName}">Máy in</td>
+                    <td class="px-4 py-3" th:text="${#temporals.format(promotion.startDate, 'dd/MM/yyyy')}">12/06/2025</td>
+                    <td class="px-4 py-3 text-center" th:text="${#temporals.format(promotion.endDate, 'dd/MM/yyyy')}">12/06/2025</td>
+					<td class="px-4 py-3 text-right"
+					    th:text="${T(java.lang.String).format('%d%%', promotion.discountValue.intValue())}">50%</td>
+                    <td class="px-4 py-3">
+                        <div class="flex justify-center space-x-2">
+                            <a th:href="@{/promotion/update/{id}(id=${promotion.id})}" class="btn-edit text-xs px-3 py-1.5 rounded shadow transition">
+                                ✏️ Sửa
+                            </a>
+                           <form th:action="@{/promotion/delete/{id}(id=${promotion.id})}" method="post" class="flex-1">
+						    <!-- Truyền số trang hiện tại -->
+						    <input type="hidden" name="page" th:value="${promotions.pageNumber}" />
+						    <button type="button" 
+						            class="w-full btn-delete text-xs px-3 py-1.5 rounded shadow transition"
+						            th:attr="data-name=${promotion.promotionName}"
+						            onclick="confirmDeleteFromButton(this)">
+						        🗑️ Xóa
+						    </button>
+						</form>
+
+                        </div>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(promotions.promotions)}">
+                    <td colspan="5" class="text-center text-gray-500 italic py-6">
+                        Không có khuyến mãi nào được tìm thấy.
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Mobile card -->
+        <div class="grid grid-cols-1 gap-4 sm:hidden mt-2">
+            <div th:each="promotion : ${promotions.promotions}" class="bg-white rounded-xl shadow p-5 flex flex-col justify-between hover:shadow-lg transition">
+                <div>
+                    <h3 class="text-lg font-bold text-gray-800 mb-2" th:text="${promotion.promotionName}">Tên khuyến mãi</h3>
+                    <p class="text-sm text-gray-500">📅 
+                        <span th:text="${#temporals.format(promotion.startDate, 'dd/MM/yyyy')}">12/06/2025</span> - 
+                        <span th:text="${#temporals.format(promotion.endDate, 'dd/MM/yyyy')}">12/07/2025</span>
+                    </p>
+	<p class="mt-2 text-blue-600 text-xl font-semibold"
+	   th:text="${T(java.lang.String).format('%d%%', promotion.discountValue.intValue())}">50%</p>
+
+                </div>
+                <div class="flex gap-2 mt-4">
+                    <a th:href="@{/promotion/update/{id}(id=${promotion.id})}" class="flex-1 text-center btn-edit text-xs px-3 py-2 rounded shadow transition">✏️ Sửa</a>
+                    <form th:action="@{/promotion/delete/{id}(id=${promotion.id})}" method="post" class="flex-1">
+				    <!-- Truyền số trang hiện tại -->
+				    <input type="hidden" name="page" th:value="${promotions.pageNumber}" />
+				    <button type="button" 
+				            class="w-full btn-delete text-xs px-3 py-2 rounded shadow transition"
+				            th:attr="data-name=${promotion.promotionName}"
+				            onclick="confirmDeleteFromButton(this)">
+				        🗑️ Xóa
+				    </button>
+				</form>
+
+                </div>
+            </div>
+            <div th:if="${#lists.isEmpty(promotions.promotions)}" class="col-span-full text-center text-gray-500 italic py-6 bg-white rounded-xl shadow">
+                Không có khuyến mãi nào được tìm thấy.
+            </div>
+        </div>
+
+        <!-- Phân trang -->
+        <div class="flex flex-col sm:flex-row items-center justify-between mt-6 gap-3" th:if="${promotions.totalPages > 1}">
+            <div class="text-sm text-gray-600">
+                <span th:text="'Trang ' + (${promotions.pageNumber + 1}) + ' / ' + ${promotions.totalPages}">Trang 1 / 5</span> |
+                <span th:text="'Tổng: ' + ${promotions.totalElements} + ' khuyến mãi'">Tổng: 25 khuyến mãi</span>
+            </div>
+            <nav>
+                <ul class="inline-flex items-center space-x-1">
+                    <li th:if="${promotions.pageNumber > 0}">
+                        <a th:href="@{/promotion(page=${promotions.pageNumber - 1})}" 
+                           class="px-3 py-2 rounded-lg border text-sm text-blue-600 hover:bg-blue-50">
+                            ◀ Trước
+                        </a>
+                    </li>
+                    <li th:each="pageNum : ${#numbers.sequence(0, promotions.totalPages - 1)}">
+                        <a th:href="@{/promotion(page=${pageNum})}" th:text="${pageNum + 1}"
+                           th:class="'px-3 py-2 rounded-lg border text-sm font-medium transition ' +
+                           (${pageNum} == ${promotions.pageNumber} 
+                             ? 'bg-blue-600 text-white border-blue-600' 
+                             : 'border-gray-300 text-gray-700 hover:bg-blue-50')"></a>
+                    </li>
+                    <li th:if="${promotions.pageNumber < promotions.totalPages - 1}">
+                        <a th:href="@{/promotion(page=${promotions.pageNumber + 1})}" 
+                           class="px-3 py-2 rounded-lg border text-sm text-blue-600 hover:bg-blue-50">
+                            Tiếp ▶
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+</body>
+</html>

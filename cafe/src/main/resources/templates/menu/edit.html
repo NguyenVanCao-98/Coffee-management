@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <meta charset="UTF-8">
+    <title>✏️ Chỉnh sửa món</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        function updateIngredientIndices() {
+            const container = document.getElementById("ingredients");
+            Array.from(container.children).forEach((row, i) => {
+                row.querySelector('select[name$=".productId"]').name = `ingredients[${i}].productId`;
+                row.querySelector('input[name$=".quantity"]').name = `ingredients[${i}].quantity`;
+                row.querySelector('select[name$=".unitName"]').name = `ingredients[${i}].unitName`;
+            });
+        }
+
+        function addIngredientRow() {
+            const container = document.getElementById("ingredients");
+            const templateRow = document.getElementById("template-row").cloneNode(true);
+            templateRow.removeAttribute("id");
+            templateRow.classList.remove("hidden");
+            container.appendChild(templateRow);
+            updateIngredientIndices();
+        }
+
+        function removeRow(btn) {
+            btn.parentElement.remove();
+            updateIngredientIndices();
+        }
+    </script>
+</head>
+<body class="bg-gray-100">
+<div layout:fragment="content" class="max-w-3xl mx-auto mt-8 bg-white p-6 rounded shadow">
+
+    <h2 class="text-2xl font-bold text-blue-600 mb-6">✏️ Chỉnh sửa món</h2>
+
+    <form th:action="@{/menu/edit/{id}(id=${menuId})}" method="post" th:object="${menuItemRequest}" class="space-y-6">
+
+        <!-- Tên món -->
+        <div>
+            <label class="block font-semibold mb-1">Tên món:</label>
+            <input type="text" th:field="*{itemName}" placeholder="Tên món..." required maxlength="15"
+                   class="w-full border px-3 py-2 rounded"/>
+        </div>
+
+        <!-- Giá tiền -->
+         <div>
+		    <label class="block font-semibold mb-1">Giá tiền:</label>
+		    <input type="number" th:field="*{currentPrice}" 
+		           step="1" 
+		           min="1000" 
+		           max="9999999" 
+		           required
+		           class="w-full border px-3 py-2 rounded" />
+		    <!-- Hiển thị lỗi nếu giá trị không hợp lệ -->
+		    <div th:if="${#fields.hasErrors('currentPrice')}" 
+		         th:errors="*{currentPrice}"
+		         class="text-red-600 text-sm mt-1"></div>
+		</div>
+
+        <!-- Thành phần -->
+        <div>
+            <h4 class="text-lg font-semibold mb-2">🥣 Thành phần</h4>
+            <div id="ingredients" class="space-y-2">
+                <div th:each="ingredient, iterStat : *{ingredients}" class="flex gap-2 mb-2">
+
+                    <!-- Product -->
+                    <select th:field="*{ingredients[__${iterStat.index}__].productId}" required
+                            class="border px-2 py-1 rounded w-1/3">
+                        <option value="" disabled>-- Chọn thành phần --</option>
+                        <option th:each="product : ${products}" th:value="${product.id}" th:text="${product.productName}"
+                                th:selected="${product.id == ingredient.productId}"></option>
+                    </select>
+
+                    <!-- Quantity -->
+                    <div class="flex flex-col w-1/4">
+                        <input type="number" th:field="*{ingredients[__${iterStat.index}__].quantity}"
+                               placeholder="Khối lượng" step="1" min="1" max="1000" required
+                               pattern="^\d+(\.\d{1,2})?$"
+                               title="Nhập số hợp lệ, dùng dấu chấm cho phần thập phân"
+                               class="border px-2 py-1 rounded w-full"/>
+                        <div th:if="${#fields.hasErrors('ingredients[' + iterStat.index + '].quantity')}"
+                             th:errors="*{ingredients[__${iterStat.index}__].quantity}"
+                             class="text-red-600 text-sm mt-1"></div>
+                    </div>
+
+                    <!-- Unit -->
+                    <select th:field="*{ingredients[__${iterStat.index}__].unitName}" required
+                            class="border px-2 py-1 rounded w-1/4">
+                        <option value="" disabled>-- Chọn đơn vị --</option>
+                        <option th:each="unit : ${units}" th:value="${unit.unitName}" th:text="${unit.unitName}"
+                                th:selected="${unit.unitName == ingredient.unitName}"></option>
+                    </select>
+
+                    <button type="button" onclick="removeRow(this)" class="text-red-600 hover:underline">Xóa</button>
+                </div>
+            </div>
+
+            <button type="button" onclick="addIngredientRow()" class="mt-3 text-sm text-blue-600 hover:underline">+ Thêm thành phần</button>
+        </div>
+
+        <!-- Hành động -->
+        <div class="flex justify-end gap-4 pt-4">
+            <a th:href="@{/menu}" class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded">❌ Hủy</a>
+            <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">💾 Cập nhật</button>
+        </div>
+    </form>
+
+    <!-- Template row ẩn -->
+    <div id="template-row" class="flex gap-2 mb-2 hidden">
+        <select name="ingredients[0].productId" required class="border px-2 py-1 rounded w-1/3">
+            <option value="" disabled selected>-- Chọn thành phần --</option>
+            <option th:each="product : ${products}" th:value="${product.id}" th:text="${product.productName}"></option>
+        </select>
+        <div class="flex flex-col w-1/4">
+            <input type="number" name="ingredients[0].quantity" placeholder="Khối lượng" step="1" min="1" max="1000" required
+                   class="border px-2 py-1 rounded w-full"/>
+        </div>
+        <select name="ingredients[0].unitName" required class="border px-2 py-1 rounded w-1/4">
+            <option value="" disabled selected>-- Chọn đơn vị --</option>
+            <option th:each="unit : ${units}" th:value="${unit.unitName}" th:text="${unit.unitName}"></option>
+        </select>
+        <button type="button" onclick="removeRow(this)" class="text-red-600 hover:underline">Xóa</button>
+    </div>
+
+</div>
+</body>
+</html>

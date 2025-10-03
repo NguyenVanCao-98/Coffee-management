@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+  <meta charset="UTF-8">
+  <title>Phục hồi dữ liệu</title>
+</head>
+<body>
+<div layout:fragment="content">
+  <div class="bg-white shadow-xl rounded-xl p-6 mt-6 max-w-3xl mx-auto">
+    <h2 class="text-2xl font-bold text-[#4e342e] mb-6">♻️ Phục hồi dữ liệu</h2>
+
+    <!-- Form chọn file -->
+    <form th:action="@{/data/restore}" method="post" enctype="multipart/form-data" class="space-y-6">
+      <!-- File Input + Text Path -->
+      <div>
+        <label class="block font-medium text-gray-700 mb-2">Chọn file phục hồi (.pcf):</label>
+        <div class="flex items-center gap-3">
+          <input id="filePath" type="text"
+                 class="flex-1 border border-gray-300 px-3 py-2 rounded-md text-sm"
+                 placeholder="Đường dẫn file..." readonly>
+          <label for="fileInput"
+                 class="cursor-pointer bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-semibold">
+            Duyệt...
+          </label>
+          <input id="fileInput" name="backupFile" type="file" accept=".pcf" class="hidden"
+                 onchange="document.getElementById('filePath').value = this.files[0]?.name || ''">
+        </div>
+      </div>
+
+      <!-- Nút -->
+      <div class="flex justify-center gap-6 pt-4">
+        <button type="submit"
+                class="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-2 rounded-md transition">
+          ♻️ Phục hồi
+        </button>
+        <a th:href="@{/home}"
+           class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold px-6 py-2 rounded-md">
+          ❌ Hủy
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+</body>
+</html>

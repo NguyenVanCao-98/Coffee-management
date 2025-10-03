@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <meta charset="UTF-8">
+    <title>Quản lý trang thiết bị</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+<div layout:fragment="content" class="bg-[#fefae0] min-h-screen w-full px-6 py-8">
+    <div class="max-w-[1500px] mx-auto">
+        <!-- Tiêu đề và nút thêm -->
+        <div class="flex items-center justify-between mb-6">
+            <h2 class="text-3xl font-bold text-gray-800 flex items-center gap-2">
+                📋 Danh sách thiết bị
+            </h2>
+            <a th:href="@{/equipment/create}"
+               class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-5 py-2 rounded-md shadow transition">
+                ➕ <span>Thêm thiết bị</span>
+            </a>
+        </div>
+
+        <div class="hidden sm:block w-full overflow-x-auto border border-gray-300 rounded-xl shadow bg-white">
+            <table class="w-full text-sm text-gray-800 table-fixed">
+                <thead class="bg-gray-100 text-xs font-semibold text-gray-600 uppercase">
+                <tr>
+                    <th class="w-[20%] px-4 py-3 text-left">Tên thiết bị</th>
+                    <th class="w-[15%] px-4 py-3 text-left">Ngày mua</th>
+                    <th class="w-[10%] px-4 py-3 text-center">Số lượng</th>
+                    <th class="w-[10%] px-4 py-3 text-right">Đơn giá</th>
+                    <th class="w-[15%] px-4 py-3 text-right">Giá</th>
+                    <th class="w-[15%] px-4 py-3 text-center">Thao tác</th>
+                </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                <tr th:each="equipment : ${equiments.equipments}" class="hover:bg-gray-50 transition">
+                    <td class="px-4 py-3 font-semibold" th:text="${equipment.equipmentName}">Máy in</td>
+                    <td class="px-4 py-3" th:text="${#temporals.format(equipment.purchaseDate, 'dd/MM/yyyy')}">12/06/2025</td>
+                    <td class="px-4 py-3 text-center" th:text="${equipment.quantity}">5</td>
+                    <td class="px-4 py-3 text-right" th:text="${#numbers.formatDecimal(equipment.purchasePrice, 0, 'COMMA', 0, 'POINT')}">50,000</td>
+                    <td class="px-4 py-3 text-right" th:text="${#numbers.formatDecimal(equipment.quantity * equipment.purchasePrice, 0, 'COMMA', 0, 'POINT')}">50,000</td>
+                    <td class="px-4 py-3">
+                        <div class="flex justify-center space-x-2">
+                            <a th:href="@{/equipment/update/{id}(id=${equipment.id})}"
+                               class="inline-flex items-center bg-yellow-400 hover:bg-yellow-500 text-white text-xs font-medium px-3 py-1.5 rounded shadow transition">
+                                ✏️ Sửa
+                            </a>
+                            <form th:action="@{/equipment/delete/{id}(id=${equipment.id})}" method="post"
+                                  th:id="'deleteForm-' + ${equipment.id}">
+                                <button type="button"
+                                        th:attr="data-id=${equipment.id}, data-name=${equipment.equipmentName}"
+                                        class="btn-delete inline-flex items-center bg-red-500 hover:bg-red-600 text-white text-xs font-medium px-3 py-1.5 rounded shadow transition">
+                                    🗑️ Xóa
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(equiments.equipments)}">
+                    <td colspan="6" class="text-center text-gray-500 italic py-6">
+                        Không có thiết bị nào được tìm thấy.
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="grid grid-cols-1 gap-4 sm:hidden">
+            <div th:each="equipment : ${equiments.equipments}"
+                 class="bg-white border border-gray-300 rounded-lg shadow p-4 hover:shadow-md transition">
+                <h3 class="text-lg font-semibold text-gray-800" th:text="${equipment.equipmentName}">Máy in</h3>
+                <p class="text-sm text-gray-600 mt-1">
+                    <span class="font-medium">Ngày mua:</span>
+                    <span th:text="${#temporals.format(equipment.purchaseDate, 'dd/MM/yyyy')}">12/06/2025</span>
+                </p>
+                <p class="text-sm text-gray-600 mt-1">
+                    <span class="font-medium">Số lượng:</span>
+                    <span th:text="${equipment.quantity}">5</span>
+                </p>
+                <p class="text-sm text-gray-600 mt-1">
+                    <span class="font-medium">Đơn giá:</span>
+                    <span th:text="${#numbers.formatDecimal(equipment.purchasePrice, 0, 'COMMA', 0, 'POINT')}">50,000</span>
+                </p>
+                <p class="text-sm text-gray-600 mt-1">
+                    <span class="font-medium">Tổng giá:</span>
+                    <span th:text="${#numbers.formatDecimal(equipment.quantity * equipment.purchasePrice, 0, 'COMMA', 0, 'POINT')}">250,000</span>
+                </p>
+                <div class="mt-4 flex justify-end gap-3">
+                    <a th:href="@{/equipment/update/{id}(id=${equipment.id})}"
+                       class="text-sm bg-yellow-400 hover:bg-yellow-500 text-white px-3 py-1.5 rounded">✏️ Sửa</a>
+                    <form th:action="@{/equipment/delete/{id}(id=${equipment.id})}" method="post"
+                          onsubmit="return confirm('Bạn chắc chắn muốn xóa thiết bị này?')">
+                        <button type="submit"
+                                class="text-sm bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded">🗑️ Xóa</button>
+                    </form>
+                </div>
+            </div>
+            <div th:if="${#lists.isEmpty(equiments.equipments)}"
+                 class="col-span-full text-center text-gray-500 italic py-6 bg-white rounded shadow">
+                Không có thiết bị nào được tìm thấy.
+            </div>
+        </div>
+
+        <div class="flex items-center justify-between mt-8 flex-wrap gap-2">
+            <div class="text-sm text-gray-600" th:if="${equiments.totalPages > 0}">
+                <span th:text="'Trang ' + (${equiments.pageNumber + 1}) + ' / ' + ${equiments.totalPages}">Trang 1 / 5</span> |
+                <span th:text="'Tổng: ' + ${equiments.totalElements} + ' thiết bị'">Tổng: 25 thiết bị</span>
+            </div>
+            <nav>
+                <ul class="inline-flex items-center space-x-1">
+                    <li>
+                        <a th:href="@{/equipment(page=${equiments.pageNumber - 1})}"
+                           th:class="'flex items-center px-3 py-2 rounded-lg border text-sm transition ' + (${equiments.pageNumber == 0} ? 'text-gray-300 border-gray-300 bg-gray-100 cursor-not-allowed pointer-events-none' : 'text-blue-600 border-blue-300 hover:bg-blue-50')">
+                            ◀ Trước
+                        </a>
+                    </li>
+                    <li th:if="${equiments.totalPages > 0}" th:each="pageNum : ${#numbers.sequence(0, equiments.totalPages - 1)}">
+                        <a th:href="@{/equipment(page=${pageNum})}"
+                           th:text="${pageNum + 1}"
+                           th:class="'px-3 py-2 rounded-lg border text-sm font-medium transition ' +
+                             (${pageNum} == ${equiments.pageNumber}
+                             ? 'bg-blue-600 text-white border-blue-600'
+                             : 'border-gray-300 text-gray-700 hover:bg-blue-50')"></a>
+                    </li>
+                    <li>
+                        <a th:href="@{/equipment(page=${equiments.pageNumber + 1})}"
+                           th:class="'flex items-center px-3 py-2 rounded-lg border text-sm transition ' + (${equiments.pageNumber + 1 >= equiments.totalPages} ? 'text-gray-300 border-gray-300 bg-gray-100 cursor-not-allowed pointer-events-none' : 'text-blue-600 border-blue-300 hover:bg-blue-50')">
+                            Tiếp ▶
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+</body>
+</html>

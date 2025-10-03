@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title>Giới thiệu</title>
+    <!-- Nếu layout.html chưa có Tailwind, bạn cần thêm dòng này vào layout.html -->
+    <!-- <script src="https://cdn.tailwindcss.com"></script> -->
+</head>
+<body>
+<div layout:fragment="content" class="max-w-3xl mx-auto p-6 bg-white rounded-lg shadow-md mt-6">
+
+    <h1 class="text-3xl font-bold text-gray-800 mb-4" th:text="${appName}"></h1>
+
+    <p class="mb-2">
+        <span class="font-semibold text-gray-700">Phiên bản:</span>
+        <span th:text="${version}" class="text-gray-600"></span>
+    </p>
+
+    <p class="mb-2">
+        <span class="font-semibold text-gray-700">Phát triển bởi:</span>
+        <span th:text="${developer}" class="text-gray-600"></span>
+    </p>
+
+    <p class="mb-2">
+        <span class="font-semibold text-gray-700">Mô tả:</span>
+        <span th:text="${description}" class="text-gray-600"></span>
+    </p>
+
+    <p class="mb-2">
+        <span class="font-semibold text-gray-700">Chất lượng:</span>
+        <span th:text="${quality}" class="text-gray-600"></span>
+    </p>
+
+</div>
+</body>
+</html>
